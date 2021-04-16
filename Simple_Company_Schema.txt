@@ -1,0 +1,282 @@
+-- Creating the required company tables with their respective Primary and Foreign Keys
+
+CREATE TABLE Employee (
+
+emp_id INT,
+first_name VARCHAR (40),
+last_name VARCHAR (40),
+birth_date DATE, 
+sex VARCHAR (1),
+salary INT,
+super_id INT,
+branch_id INT,
+
+PRIMARY KEY (emp_id)
+
+); 
+
+
+
+CREATE TABLE Branch (
+
+branch_id INT,
+branch_name VARCHAR (40),
+manager_id INT,
+manager_start_date DATE,
+
+PRIMARY KEY (branch_id),
+FOREIGN KEY (manager_id) REFERENCES Employee (emp_id) ON DELETE SET NULL
+
+);
+
+--Alter the Employee table to add foreign key to supervisor id and branch id
+ALTER TABLE Employee
+ADD FOREIGN KEY (branch_id) REFERENCES Branch (branch_id) ON DELETE SET NULL;
+
+ALTER TABLE Employee
+ADD FOREIGN KEY (super_id) REFERENCES Employee(emp_id) ON DELETE SET NULL;
+
+CREATE TABLE Client_ (
+
+client_id INT,
+client_name VARCHAR (40),
+branch_id INT,
+
+PRIMARY KEY (client_id),
+FOREIGN KEY (branch_id) REFERENCES Branch (branch_id) ON DELETE SET NULL
+
+)
+;
+
+
+CREATE TABLE Works_With (
+
+emp_id INT,
+client_id INT,
+total_sales INT,
+
+PRIMARY KEY (emp_id, client_id),
+FOREIGN KEY (emp_id) REFERENCES Employee (emp_id) ON DELETE CASCADE,
+FOREIGN KEY (client_id) REFERENCES Client_ (client_id) ON DELETE CASCADE
+
+);
+
+
+
+
+
+CREATE TABLE Branch_Supplier (
+        
+branch_id INT,
+supplier_name VARCHAR (40),
+supply_type VARCHAR (40),
+
+PRIMARY KEY (branch_id, supplier_name),
+FOREIGN KEY (branch_id) REFERENCES Branch (branch_id) ON DELETE CASCADE
+
+)
+;
+
+
+--Populating the company tables. Since there's an inter Foreign key relationship between the tables (Employee and Branch), populating it will be done step by step.
+
+INSERT INTO Employee VALUES
+(100, 'David', 'Wallace', '1967-11-17', 'M', 250000, NULL, NULL); #branch INT value was set to NULL as the branch ID hasn't been created yet, because the branch ID depends on the employee ID we are about to create.
+
+INSERT INTO Branch VALUES
+(1, 'Corporate', 100, '2006-02-09');
+
+UPDATE Employee
+SET branch_id = 1
+WHERE emp_id = 100;
+
+
+INSERT INTO Employee VALUES
+(101, 'Jan', 'Levinson', '1961-05-11', 'F', 110000, 100, 1);
+
+
+INSERT INTO Employee VALUES
+(102, 'Micheal', 'Scott', '1964-03-15', 'M', 75000, 100, NULL);
+
+INSERT INTO Branch VALUES
+(2, 'Scranton', 102, '1992-04-06');
+
+UPDATE Employee
+SET branch_id = 2
+WHERE emp_id = 102;
+
+INSERT INTO Employee VALUES
+(103, 'Angela', 'Martin', '1971-06-25', 'F', 63000, 102, 2),
+(104, 'Kelly', 'Kapoor', '1980-02-05', 'F', 55000, 102, 2),
+(105, 'Stanley', 'Hudson', '1958-02-19', 'M', 69000, 102, 2);
+
+INSERT INTO Employee VALUES
+(106, 'Josh', 'Porter', '1969-09-05', 'M', 78000, 100, NULL);
+
+INSERT INTO Branch VALUES
+(3, 'Stamford', 106, '1998-02-13');
+
+UPDATE Employee
+SET branch_id = 3
+WHERE emp_id = 106;
+
+INSERT INTO Employee VALUES
+(107, 'Andy', 'Bernard', '1973-07-22', 'M', 65000, 106, 3),
+(108, 'Jim', 'Halpert', '1978-10-01', 'M', 71000, 106, 3);
+
+
+
+INSERT INTO Client_ VALUES
+(400, 'Dunmore Highschool', 2),
+(401, 'Lackawana Country', 2),
+(402, 'FedEx', 3),
+(403, 'John Daly Law, LLC', 3),
+(404, 'Scranton Whitepages', 2),
+(405, 'Times Newspaper', 3),
+(406, 'FedEx', 2)
+;
+
+INSERT INTO Works_With VALUES
+(105, 400, 55000),
+(102, 401, 267000),
+(108, 402, 22500),
+(107, 403, 5000),
+(108, 403, 12000),
+(105, 404, 33000),
+(107, 405, 26000),
+(102, 406, 15000),
+(105, 406, 130000)
+;
+
+INSERT INTO Branch_Supplier VALUES
+(2, 'Hammer Mill', 'Paper'),
+(2, 'Uni-ball', 'Writing Utensils'),
+(3, 'Patriot Paper', 'Paper'),
+(2, 'J.T. Forms & Labels', 'Custom Forms'),
+(3, 'Uni-ball', 'Writing Utensils'),
+(3, 'Hammer Mill', 'Paper'),
+(3, 'Stamford Labels', 'Custom Forms')
+;
+
+
+SELECT * FROM Employee;
+
+--TASK 1
+--Find all the employees in the database
+SELECT *
+FROM Employee;
+
+--TASK 2
+--Find all clients
+
+SELECT *
+FROM Client_;
+
+--TASK 3
+--Find all employees orderd from highest salary
+
+SELECT *
+FROM Employee
+ORDER BY salary DESC;
+
+--TASK 4
+-- find all employee order by sex and first name
+
+SELECT *
+FROM Employee
+ORDER BY sex, first_name, last_name;
+
+--TASK 5
+--find first 5 employees
+
+SELECT *
+FROM Employee LIMIT 5;
+
+--TASK 6
+--List all employees first and last name
+
+SELECT first_name, last_name
+FROM Employee;
+
+--TASK 7
+-- list all employee as forename and Lastname
+
+SELECT first_name AS Fore_name, last_name AS Surname
+FROM Employee;
+
+--TASK 8
+--Select the distinct values of a column
+
+SELECT DISTINCT branch_name
+FROM Branch;
+
+--TASK 9
+--Number of male employees will more than 70k salary
+
+SELECT COUNT (emp_id)
+FROM Employee
+WHERE salary > 70000 AND sex = 'M';
+
+
+--TASK 10
+--Find the AVg of all employees salary
+
+SELECT AVG(salary)
+FROM Employee;
+
+
+--Task 11
+--Group the sex
+SELECT COUNT(sex), sex
+FROM Employee
+GROUP BY sex;
+
+--Task 12
+--List of all employees born in February
+
+SELECT *
+FROM Employee
+WHERE birth_date LIKE '____-02%';
+
+--Task 13
+--Find any client who are schools
+
+SELECT *
+FROM Client_
+WHERE client_name LIKE '%school%';
+
+#UNION
+
+--Task 14
+--Find list of all employee and branch name
+
+SELECT first_name
+FROM Employee 
+UNION
+SELECT branch_name
+FROM Branch;
+
+#JOINS
+
+
+INSERT INTO Branch VALUES(4, 'Buffalo', NULL, NULL);
+SELECT * 
+FROM Branch;
+
+--TASK 15
+-- find all the branch name and their respective mangers
+
+SELECT Employee.emp_id, Employee.first_name, Branch.branch_name
+FROM Employee
+JOIN Branch
+ON Branch.manager_id = Employee.emp_id;
+
+
+--TASK 16
+-- List all employees that have have sold product more than 50k to a client
+
+SELECT Employee.first_name, Works_With.total_sales
+FROM Employee
+JOIN Works_With
+ON Employee.emp_id = Works_With.emp_id
+WHERE total_sales > 30000;
